@@ -33,7 +33,7 @@
           </div>
 
          
-        <button class="btn btn-primary" type="button" ng-click="delete(node);node.label='';" ng-show="node.label.length > 0 && isEmpty(node.nodes)">Delete!</button>
+        <button class="btn btn-primary" type="button" ng-click="delete(node);" ng-show="node.label.length > 0 && isEmpty(node.nodes)">Delete!</button>
         <div style="display:inline-block">
         <form method="post" enctype="multipart/form-data" action="app/ajax_url.php" ng-show="node.is_dir" target="uploadTrg">
           <input type="hidden" name="action" value="uploadFile" />
