@@ -96,7 +96,7 @@ angular.module('idomoo', [])
                     name: node.label                    
                 };
                 idomooFactory.sendRequest(data).then(function(data){
-
+                    node.label = '';
                 }, function(err){
                     alert(err.message);
                 });                
