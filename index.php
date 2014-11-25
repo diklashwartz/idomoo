@@ -28,12 +28,12 @@
       
          <button class="btn btn-primary btn-warning" ng-hide="node.editSave" type="button" ng-click="node.editSave = !node.editSave">Rename</button>          
           <div class="edit-view" ng-show="node.editSave">
-            <input type="text" ng-model="node.new_name" placeholder="{{node.label}}"/> 
+            <input type="text" ng-model="node.new_name" placeholder="{{node.label}}"/>
             <button class="btn btn-primary btn-success" type="button" ng-click="renameItem(node); node.editSave = !node.editSave">Save</button>
           </div>
 
          
-        <button class="btn btn-primary" type="button" ng-click="delete(node);" ng-show="node.label.length > 0 && isEmpty(node.nodes)">Delete!</button>
+        <button class="btn btn-danger" type="button" ng-click="delete(node);" ng-show="node.label.length > 0" >Delete!</button>
         <div style="display:inline-block">
         <form method="post" enctype="multipart/form-data" action="app/ajax_url.php" ng-show="node.is_dir" target="uploadTrg">
           <input type="hidden" name="action" value="uploadFile" />

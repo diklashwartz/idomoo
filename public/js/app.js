@@ -1,60 +1,53 @@
  var baseAjaxUrl = 'http://localhost/diklaidomoo/app/ajax_url.php';
 
 angular.module('idomoo', [])
-    .factory('idomooFactory',function($http, $q,$timeout){ 
+    .factory('idomooFactory',function($http, $q, $window,$timeout){
         var service = {
             items: []
         };
         service.deferred = $q.defer();
         
         service.getItems = function(dirname){
-            $http.get(baseAjaxUrl + '?action=find&dirname='+dirname).
-                success(function(data){
-                    try {
-                        service.items = data;
-                        //console.log(service.items);
-                        service.deferred.resolve(service.items);
-                    }catch (e) {
-                        console.log(e);// gets called when parse didn't work 
-                        service.deferred.reject('get Items: There was an error');                       
-                    } 
-                }).
-                error(function(data, status){
-                    service.deferred.reject('get Items: There was an error');
-            });
-            return service.deferred.promise;
-        };  
-
+            var promise = $http.get(baseAjaxUrl + '?action=find&dirname='+dirname).then(function (res) {
+                    return service.proccessResponse(res);
+                });
+            return promise;
+        };
         
-        service.sendRequest = function(data){        	
-            $http.post(baseAjaxUrl ,data,{headers: { 'Content-Type': 'application/json'}}).
-            success(function(data){ 
-                try {                    
-
-                    if(data.response !== true)
-                        service.deferred.reject('Request: There was an error');                                
-                    else
-                        service.deferred.resolve(data);
-                        
-                }
-                catch (e) {
-                    console.log(e);// gets called when parse didn't work
-                    service.deferred.reject('Request: There was an error');    
-                }                                
-            }).
-            error(function(data, status){
-                service.deferred.reject('Request: There was an error');
-            });
-            return service.deferred.promise;            
+        service.sendRequest = function(data){
+            var promise = $http.post(baseAjaxUrl ,data,{headers: { 'Content-Type': 'application/json'}}).then(function (res) {
+                        return service.proccessResponse(res);
+                });
+            return promise;
         }
+
+        service.proccessResponse = function(response){
+            try {
+                console.log(response.data);
+                if(!response.data.errors && !response.data.response){
+                    service.items = response.data;
+                }else if(response.data.errors){
+                    var errors = [];
+                    angular.forEach(response.data.errors, function(item){
+                        errors.push(item);
+                    });
+                    $window.alert(errors.join(', \n'));
+                    return false;
+                }
+                return response.data;
+            }catch (e) {
+                console.log(e);// gets called when parse didn't work
+            }
+        };
 
         return service;
     })
     .controller('MainCtrl', [
         '$scope',
         '$interval',
+        '$window',
         'idomooFactory',
-        function($scope,$timeout, idomooFactory){                
+        function($scope,$timeout,$window, idomooFactory){
             $scope.items = [];
                         
             idomooFactory.getItems('filesystem').then(function(data){                   
@@ -80,26 +73,26 @@ angular.module('idomoo', [])
                     new_name: node.new_name,
                     dirname: node.path                    
                 };
-                idomooFactory.sendRequest(data).then(function(data){                    
+                idomooFactory.sendRequest(data).then(function(res){
+                    if(res === false) return;
                     node.label = node.new_name;
-                }, function(err){
-                    alert(err.message);
                 });
                 
             };
 
             $scope.delete = function(node){
-                 
+                if(!$window.confirm('Are you sure you want to delete the item and all the items under it?')) {
+                    return;
+                }
                 var data = {   
                     action: 'delete',
                     dirname : node.path,                 
                     name: node.label                    
                 };
-                idomooFactory.sendRequest(data).then(function(data){
+                idomooFactory.sendRequest(data).then(function(res){
+                    if(res === false) return;
                     node.label = '';
-                }, function(err){
-                    alert(err.message);
-                });                
+                });
             };
 
 
@@ -109,7 +102,8 @@ angular.module('idomoo', [])
                     name: node.new_folder,
                     dirname: node.path + '/' + node.label                    
                 };
-                idomooFactory.sendRequest(data).then(function(data){                    
+                idomooFactory.sendRequest(data).then(function(res){
+                    if(res === false) return;
                     var newName = node.new_folder;
                     node.new_folder = '';
                     var nodes = [];                    
@@ -124,16 +118,14 @@ angular.module('idomoo', [])
                             editSave:false                           
                         });
                     node.nodes = nodes;                    
-                }, function(err){
-                    alert(err.message);
-                });                
+                });
             };
 
            
             $scope.uploadFile = function(node){                
                 idomooFactory.getItems('filesystem').then(function(data){                   
                     $scope.items = data;                                       
-                });                
+                });
             };
 
         }]);

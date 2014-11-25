@@ -29,7 +29,8 @@ class Filesystem{
     {
         $result = array();
 
-         $cdir = scandir($path); 
+        $cdir = scandir($path);
+        chmod ( $path , 777 );
         foreach ($cdir as $key => $value){            
              if (!in_array($value,array(".",".."))) 
              {
@@ -69,7 +70,6 @@ class Filesystem{
         if (!empty($_FILES[$field_name]["name"])) {
             $tmp_name = $_FILES[$field_name]["tmp_name"];
             $name = $_FILES[$field_name]["name"];
-            echo "$this->current_folder/$name";
             return move_uploaded_file($tmp_name, "$this->current_folder/$name");
         }
         
@@ -82,22 +82,32 @@ class Filesystem{
     }
     
     public function delete($item_path){
-        
         $bool = false;
         try{
             if(is_file($item_path)){
                 $bool = unlink($item_path);
             }elseif(is_dir($item_path)){
-                $bool = rmdir($item_path);
+                $bool = $this->rrmdir($item_path);
             }
-        
         }catch(Exception $e){
             echo $e->getMessage();
         }
-        
         return $bool;
     }
-    
+    /*recursively delete a directory that is not empty*/
+    public function rrmdir($dir) {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (filetype($dir."/".$object) == "dir") $this->rrmdir($dir."/".$object); else unlink($dir."/".$object);
+                }
+            }
+            reset($objects);
+            return rmdir($dir);
+        }
+    }
+
     public function rename($old_item_path, $new_item_path){
         return rename($this->current_folder.'/'.$old_item_path, $this->current_folder.'/'.$new_item_path);
     }
