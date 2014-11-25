@@ -35,9 +35,15 @@ class FilesystemAPI extends API{
          if(empty($_POST['new_name']))
              $errors[] = 'The new name is empty.';
          if(!count($errors)){
-            $this->Filesystem->setCurrentFolder($_POST['dirname']);
-            if($this->Filesystem->rename($_POST['old_name'],$_POST['new_name']))
-                return array('response'=>true);
+             try{
+                $this->Filesystem->setCurrentFolder($_POST['dirname']);
+                if($this->Filesystem->rename($_POST['old_name'],$_POST['new_name']))
+                    return array('response'=>true);
+                else
+                    $errors[] = 'Error Occurred. Check file permissions.';
+             }catch(Exception $e){
+                 $errors[] = $e->getMessage();
+             }
          }
         return array('response'=>false, 'errors' => $errors);
      }
@@ -49,8 +55,14 @@ class FilesystemAPI extends API{
          if(empty($_POST['name']))
              $errors[] = 'The item name is empty.';
          if(!count($errors)){
-            if($this->Filesystem->delete($_POST['dirname'] . '/' .$_POST['name']))
-                return array('response'=>true);
+             try{
+                if($this->Filesystem->delete($_POST['dirname'] . '/' .$_POST['name']))
+                    return array('response'=>true);
+                 else
+                     $errors[] = 'Error Occurred. Check file permissions.';
+             }catch(Exception $e){
+                 $errors[] = $e->getMessage();
+             }
          }
          return array('response'=>false, 'errors' => $errors);
      }
@@ -64,6 +76,8 @@ class FilesystemAPI extends API{
         if(!count($errors)){
             if($this->Filesystem->createFolder($_POST['dirname']. '/' .$_POST['name']))
                 return array('response'=>true);
+            else
+                $errors[] = 'Error Occurred. Check permissions.';
         }
         return array('response'=>false, 'errors' => $errors);
      }
@@ -76,9 +90,15 @@ class FilesystemAPI extends API{
         if(empty($_FILES['name']["name"]))
             $errors[] = 'The file is missing.';
         if(!count($errors)){
-             $this->Filesystem->setCurrentFolder($_POST['dirname']);
-            if($this->Filesystem->uploadFile('name'))
-                return array('response'=>true);
+            try{
+                $this->Filesystem->setCurrentFolder($_POST['dirname']);
+                if($this->Filesystem->uploadFile('name'))
+                    return array('response'=>true);
+                else
+                    $errors[] = 'Error Occurred. Check file permissions.';
+            }catch(Exception $e){
+                $errors[] = $e->getMessage();
+            }
         }
         return array('response'=>false, 'errors' => $errors);
      }

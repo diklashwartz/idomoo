@@ -37,6 +37,7 @@ angular.module('idomoo', [])
                 return response.data;
             }catch (e) {
                 console.log(e);// gets called when parse didn't work
+                return false;
             }
         };
 

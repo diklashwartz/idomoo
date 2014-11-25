@@ -6,6 +6,8 @@
  * and open the template in the editor.
  */
 
+error_reporting(0);
+
 require_once 'models/FilesystemAPI.php';
 
 try {
